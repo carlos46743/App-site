@@ -16,7 +16,9 @@ const Quiz: React.FC<{ onBack: () => void }> = ({ onBack }) => {
 
   useEffect(() => {
     const saved = DB.getQuiz();
-    setQuestions(saved);
+    if (saved && saved.length > 0) {
+      setQuestions(saved);
+    }
   }, []);
 
   const handleAnswer = (idx: number) => {
@@ -28,17 +30,25 @@ const Quiz: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   };
 
   const handleGenerateAI = async () => {
-    if (!topic) return;
+    if (!topic.trim()) return;
     setLoading(true);
-    const newQs = await generateQuizAI(topic);
-    if (newQs && newQs.length > 0) {
-      setQuestions(newQs);
-      setCurrentIdx(0);
-      setScore(0);
-      setAnswered(null);
-      setIsFinished(false);
+    try {
+      const newQs = await generateQuizAI(topic);
+      if (newQs && newQs.length > 0) {
+        setQuestions(newQs);
+        // Persistir no DB se desejar salvar os quizes gerados por IA
+        newQs.forEach((q: any) => DB.saveQuizQuestion({...q, id: Date.now() + Math.random().toString()}));
+        
+        setCurrentIdx(0);
+        setScore(0);
+        setAnswered(null);
+        setIsFinished(false);
+      }
+    } catch (e) {
+      console.error("Erro ao gerar quiz:", e);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const nextQuestion = () => {
@@ -54,10 +64,10 @@ const Quiz: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     return (
       <div className="p-8 text-center animate-in zoom-in min-h-screen flex items-center justify-center">
         <div className="bg-white rounded-[56px] p-12 shadow-2xl border border-stone-100 w-full max-w-sm">
-          <div className="w-20 h-20 bg-amber-50 rounded-full flex items-center justify-center text-amber-600 mx-auto mb-8">
+          <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-600 mx-auto mb-8">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-10 h-10"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
           </div>
-          <h2 className="text-3xl font-bold text-stone-900 mb-2 font-serif">Concluído</h2>
+          <h2 className="text-3xl font-bold text-stone-900 mb-2 font-serif">Concluído!</h2>
           <p className="text-stone-400 text-xs font-bold uppercase tracking-widest mb-10">Desafio Finalizado</p>
           
           <div className="text-7xl font-black text-stone-900 mb-12 tracking-tighter">
@@ -65,8 +75,8 @@ const Quiz: React.FC<{ onBack: () => void }> = ({ onBack }) => {
           </div>
           
           <div className="space-y-4">
-            <button onClick={() => { setIsFinished(false); setCurrentIdx(0); setScore(0); setAnswered(null); }} className="w-full bg-stone-900 text-white py-5 rounded-[24px] font-black text-[10px] uppercase tracking-[0.3em] shadow-xl">Recomeçar</button>
-            <button onClick={onBack} className="w-full py-4 text-stone-400 font-bold text-[10px] uppercase tracking-widest">Voltar ao Menu</button>
+            <button onClick={() => { setIsFinished(false); setCurrentIdx(0); setScore(0); setAnswered(null); }} className="w-full bg-stone-900 text-white py-5 rounded-[24px] font-black text-[10px] uppercase tracking-[0.3em] shadow-xl active:scale-95 transition-all">Recomeçar</button>
+            <button onClick={onBack} className="w-full py-4 text-stone-400 font-bold text-[10px] uppercase tracking-widest active:scale-95">Voltar ao Menu</button>
           </div>
         </div>
       </div>
@@ -74,7 +84,7 @@ const Quiz: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   }
 
   return (
-    <div className="p-6 animate-in slide-in-from-right duration-500 min-h-screen">
+    <div className="p-6 animate-in slide-in-from-right duration-500 min-h-screen pb-32">
       <header className="flex items-center justify-between mb-12 py-6">
         <button onClick={onBack} className="w-12 h-12 rounded-2xl bg-white border border-stone-100 flex items-center justify-center shadow-sm text-stone-400 active:scale-90 transition-all">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5"><path d="m15 18-6-6 6-6"/></svg>
@@ -83,17 +93,22 @@ const Quiz: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         <div className="w-12"></div>
       </header>
 
-      {/* AI Theme Picker: Minimalist */}
+      {/* AI Theme Picker */}
       <div className="bg-stone-900 rounded-[40px] p-10 mb-12 shadow-2xl border border-stone-800">
-        <h3 className="text-amber-500 text-[9px] font-black uppercase tracking-[0.4em] mb-6">PERSONALIZAR TESTE</h3>
+        <h3 className="text-amber-500 text-[9px] font-black uppercase tracking-[0.4em] mb-6">GERAR NOVO DESAFIO</h3>
         <div className="flex gap-3">
           <input 
-            placeholder="Tema bíblico (Ex: Salmos)" 
+            placeholder="Tema (Ex: Parábolas, Davi...)" 
             className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white text-sm focus:outline-none focus:ring-1 focus:ring-amber-500/50 transition-all placeholder:text-stone-600"
             value={topic}
             onChange={e => setTopic(e.target.value)}
+            onKeyPress={e => e.key === 'Enter' && handleGenerateAI()}
           />
-          <button onClick={handleGenerateAI} disabled={loading || !topic} className="bg-amber-600 w-14 h-14 rounded-2xl flex items-center justify-center text-white shadow-lg active:scale-90 disabled:opacity-20 transition-all">
+          <button 
+            onClick={handleGenerateAI} 
+            disabled={loading || !topic.trim()} 
+            className="bg-amber-600 w-14 h-14 rounded-2xl flex items-center justify-center text-white shadow-lg active:scale-90 disabled:opacity-20 transition-all"
+          >
             {loading ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-5 h-5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>}
           </button>
         </div>
@@ -124,20 +139,23 @@ const Quiz: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                 className={`w-full p-6 rounded-[28px] border font-bold text-sm transition-all text-left flex items-center justify-between ${answered === null ? 'bg-white border-stone-100 hover:border-amber-400 text-stone-700' : (i === questions[currentIdx].correctIndex ? 'bg-emerald-50 border-emerald-500 text-emerald-800' : (i === answered ? 'bg-rose-50 border-rose-500 text-rose-800' : 'bg-stone-50 border-stone-50 opacity-30 text-stone-400'))}`}
               >
                 <span>{opt}</span>
-                {answered !== null && i === questions[currentIdx].correctIndex && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="w-4 h-4"><polyline points="20 6 9 17 4 12"/></svg>}
+                {answered !== null && i === questions[currentIdx].correctIndex && (
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="w-5 h-5"><polyline points="20 6 9 17 4 12"/></svg>
+                )}
               </button>
             ))}
           </div>
 
           {answered !== null && (
             <button onClick={nextQuestion} className="w-full bg-stone-900 text-amber-500 py-6 rounded-[28px] font-black text-[10px] uppercase tracking-[0.4em] shadow-2xl animate-in slide-in-from-bottom-4 transition-all active:scale-95">
-              {currentIdx === questions.length - 1 ? 'FINALIZAR' : 'PRÓXIMA'}
+              {currentIdx === questions.length - 1 ? 'FINALIZAR' : 'PRÓXIMA PERGUNTA'}
             </button>
           )}
         </div>
       ) : (
-        <div className="text-center py-20 bg-white rounded-[40px] border border-dashed border-stone-200">
-          <p className="text-stone-400 font-bold text-[10px] uppercase tracking-widest">Defina um tema para iniciar o desafio</p>
+        <div className="text-center py-20 px-10 bg-white rounded-[40px] border border-dashed border-stone-200">
+          <div className="text-4xl mb-6 grayscale opacity-20">📖</div>
+          <p className="text-stone-400 font-bold text-[10px] uppercase tracking-widest leading-relaxed">Defina um tema bíblico acima para que a IA gere um desafio personalizado para você!</p>
         </div>
       )}
     </div>

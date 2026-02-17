@@ -67,7 +67,7 @@ const Home: React.FC<HomeProps> = ({ onNavigate }) => {
              <SmallMenuCard 
                 title="Momentos"
                 subtitle="Orações & Mural"
-                image="https://images.unsplash.com/photo-1445445290250-d8a346a0e2cb?auto=format&fit=crop&q=80&w=400"
+                image="https://images.unsplash.com/photo-1445445290250-d8a346a0e2cb?auto=format&fit=crop&q=80&w=800"
                 onClick={() => onNavigate('oracao')}
              />
           </div>
@@ -90,7 +90,7 @@ const LargeMenuCard = ({ title, subtitle, image, onClick, accent }: any) => (
 );
 
 const SmallMenuCard = ({ title, subtitle, image, onClick }: any) => (
-  <button onClick={onClick} className="relative h-56 rounded-[48px] overflow-hidden shadow-md group transition-all active:scale-95 text-left border border-white">
+  <button onClick={onClick} className="relative h-56 rounded-[48px] overflow-hidden shadow-md group transition-all active:scale-95 text-left border border-white bg-stone-100">
     <img src={image} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt={title} />
     <div className="absolute inset-0 bg-stone-900/40"></div>
     <div className="absolute inset-0 bg-gradient-to-b from-stone-900/70 to-transparent"></div>
