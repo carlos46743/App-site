@@ -39,9 +39,14 @@ export const generateQuizAI = async (topic: string) => {
       }
     }
   });
+  
+  const text = response.text;
+  if (!text) return null;
+
   try {
-    return JSON.parse(response.text);
+    return JSON.parse(text);
   } catch (e) {
+    console.error("Erro ao parsear JSON do Quiz:", e);
     return null;
   }
 };

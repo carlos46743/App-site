@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import { DB } from './db';
-import { Study, Article, Prayer, QuizQuestion } from './types';
+import { QuizQuestion } from './types';
 import { generateQuizAI, generatePrayerAI } from './geminiService';
 
 const AdminApp: React.FC = () => {
@@ -34,8 +34,15 @@ const AdminApp: React.FC = () => {
     if (!topic) return;
     setLoading(true);
     const res = await generateQuizAI(topic);
-    if (res) {
-      res.forEach(q => DB.saveQuizQuestion({ ...q, id: Math.random().toString(36).substr(2, 9) }));
+    if (res && Array.isArray(res)) {
+      res.forEach((q: Partial<QuizQuestion>) => {
+        DB.saveQuizQuestion({ 
+          question: q.question || '',
+          options: q.options || [],
+          correctIndex: q.correctIndex ?? 0,
+          id: Math.random().toString(36).substr(2, 9) 
+        });
+      });
       refresh();
       setTopic('');
     }
