@@ -9,14 +9,47 @@ const STORAGE_KEYS = {
   COMMUNITY_PRAYERS: 'ebd_community_prayers'
 };
 
+const defaultStudies: Study[] = [
+  {
+    id: '1',
+    title: 'O Poder da Fé',
+    verse: 'Ora, a fé é a certeza daquilo que esperamos.',
+    explanation: 'A fé não é apenas acreditar, é confiar plenamente na soberania de Deus mesmo quando não vemos o caminho.',
+    application: 'Tire 5 minutos hoje para entregar a Deus sua maior preocupação.',
+    prayer: 'Senhor, aumenta a minha fé...',
+    date: 'Dia 1',
+    image: 'https://images.unsplash.com/photo-1507434965515-61970f2bd7c6?auto=format&fit=crop&q=80&w=800',
+    timestamp: Date.now()
+  },
+  {
+    id: '2',
+    title: 'A Graça Redentora',
+    verse: 'Pela graça sois salvos, por meio da fé.',
+    explanation: 'A graça é um presente imerecido. Não trabalhamos para obtê-la; nós a recebemos através de Cristo.',
+    application: 'Perdoe alguém hoje, assim como você foi perdoado pela graça.',
+    prayer: 'Pai, obrigado por Teu amor sem limites...',
+    date: 'Dia 2',
+    image: 'https://images.unsplash.com/photo-1490730141103-6ac27d020028?auto=format&fit=crop&q=80&w=800',
+    timestamp: Date.now()
+  },
+  {
+    id: '3',
+    title: 'Caminhando em Luz',
+    verse: 'Tua palavra é lâmpada para os meus pés.',
+    explanation: 'Em um mundo escuro, a Bíblia serve como o guia que revela os perigos e o caminho seguro.',
+    application: 'Leia um capítulo de Provérbios antes de tomar uma decisão importante.',
+    prayer: 'Espírito Santo, ilumina meu entendimento...',
+    date: 'Dia 3',
+    image: 'https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&q=80&w=800',
+    timestamp: Date.now()
+  }
+];
+
 export const verses = [
   { text: "Lâmpada para os meus pés é tua palavra, e luz para o meu caminho.", ref: "Salmos 119:105" },
   { text: "O Senhor é o meu pastor, nada me faltará.", ref: "Salmos 23:1" },
   { text: "Tudo posso naquele que me fortalece.", ref: "Filipenses 4:13" },
-  { text: "O amor é sofredor, é benigno; o amor não é invejoso...", ref: "1 Coríntios 13:4" },
-  { text: "Buscai primeiro o reino de Deus e a sua justiça.", ref: "Mateus 6:33" },
-  { text: "Vinde a mim, todos os que estais cansados e oprimidos.", ref: "Mateus 11:28" },
-  { text: "O temor do Senhor é o princípio da sabedoria.", ref: "Provérbios 1:7" }
+  { text: "Buscai primeiro o reino de Deus e a sua justiça.", ref: "Mateus 6:33" }
 ];
 
 export const DB = {
@@ -29,7 +62,7 @@ export const DB = {
 
   saveCommunityPrayer: (request: PrayerRequest) => {
     const requests = DB.getCommunityPrayers();
-    requests.unshift(request); // Novos pedidos primeiro
+    requests.unshift(request);
     localStorage.setItem(STORAGE_KEYS.COMMUNITY_PRAYERS, JSON.stringify(requests));
   },
 
@@ -54,15 +87,16 @@ export const DB = {
 
   getStudies: (): Study[] => {
     const stored = localStorage.getItem(STORAGE_KEYS.STUDIES);
-    return stored ? JSON.parse(stored) : [];
+    const studies = stored ? JSON.parse(stored) : [];
+    return studies.length > 0 ? studies : defaultStudies;
   },
   saveStudy: (study: Study) => {
-    const studies = DB.getStudies();
+    const studies = JSON.parse(localStorage.getItem(STORAGE_KEYS.STUDIES) || '[]');
     studies.push(study);
     localStorage.setItem(STORAGE_KEYS.STUDIES, JSON.stringify(studies));
   },
   deleteStudy: (id: string) => {
-    const studies = DB.getStudies().filter(s => s.id !== id);
+    const studies = JSON.parse(localStorage.getItem(STORAGE_KEYS.STUDIES) || '[]').filter((s: any) => s.id !== id);
     localStorage.setItem(STORAGE_KEYS.STUDIES, JSON.stringify(studies));
   },
   getArticles: (): Article[] => {

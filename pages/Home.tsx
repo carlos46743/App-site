@@ -51,7 +51,7 @@ const Home: React.FC<HomeProps> = ({ onNavigate }) => {
         <div className="space-y-6">
           <LargeMenuCard 
             title="Jornada de 7 Dias"
-            subtitle="Ciclo de renovação espiritual"
+            subtitle="Estudos bíblicos profundos"
             image="https://images.unsplash.com/photo-1507434965515-61970f2bd7c6?auto=format&fit=crop&q=80&w=800"
             onClick={() => onNavigate('estudos')}
             accent="bg-amber-600"
@@ -65,8 +65,8 @@ const Home: React.FC<HomeProps> = ({ onNavigate }) => {
                 onClick={() => onNavigate('quiz')}
              />
              <SmallMenuCard 
-                title="Momento"
-                subtitle="Orações"
+                title="Momentos"
+                subtitle="Orações & Mural"
                 image="https://images.unsplash.com/photo-1445445290250-d8a346a0e2cb?auto=format&fit=crop&q=80&w=400"
                 onClick={() => onNavigate('oracao')}
              />
@@ -82,7 +82,7 @@ const LargeMenuCard = ({ title, subtitle, image, onClick, accent }: any) => (
     <img src={image} className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" alt={title} />
     <div className="absolute inset-0 bg-gradient-to-t from-stone-900/90 via-stone-900/20 to-transparent"></div>
     <div className="absolute bottom-10 left-10 right-10">
-      <div className={`inline-block px-4 py-1.5 rounded-full ${accent} text-white text-[9px] font-black uppercase tracking-widest mb-4`}>COMECAR</div>
+      <div className={`inline-block px-4 py-1.5 rounded-full ${accent} text-white text-[9px] font-black uppercase tracking-widest mb-4`}>VER ESTUDOS</div>
       <h3 className="text-3xl font-bold text-white mb-2 font-serif">{title}</h3>
       <p className="text-white/60 text-xs font-medium tracking-tight">{subtitle}</p>
     </div>
