@@ -1,8 +1,8 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { DB } from '../db';
 import { Prayer } from '../types';
-import { generatePrayerAI } from '../geminiService';
+import { generatePrayerAI, generateSpeechAI, decodePCM } from '../geminiService';
 
 interface PrayerProps {
   onBack: () => void;
@@ -10,53 +10,74 @@ interface PrayerProps {
 
 const PrayerPage: React.FC<PrayerProps> = ({ onBack }) => {
   const [prayers, setPrayers] = useState<Prayer[]>([]);
-  const [speechStatus, setSpeechStatus] = useState<'playing' | 'paused' | 'stopped'>('stopped');
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [loadingAudioId, setLoadingAudioId] = useState<string | null>(null);
   const [activePrayerId, setActivePrayerId] = useState<string | null>(null);
   
   const [mood, setMood] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
   const [generatedPrayer, setGeneratedPrayer] = useState<string | null>(null);
 
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const sourceNodeRef = useRef<AudioBufferSourceNode | null>(null);
+
   useEffect(() => {
     setPrayers(DB.getPrayers());
     return () => {
-      window.speechSynthesis.cancel();
+      stopAudio();
     };
   }, []);
 
-  const handleRead = (text: string, id: string) => {
-    if (activePrayerId === id) {
-      if (speechStatus === 'playing') {
-        window.speechSynthesis.pause();
-        setSpeechStatus('paused');
-      } else if (speechStatus === 'paused') {
-        window.speechSynthesis.resume();
-        setSpeechStatus('playing');
-      } else {
-        startNewUtterance(text, id);
-      }
-      return;
+  const stopAudio = () => {
+    if (sourceNodeRef.current) {
+      sourceNodeRef.current.stop();
+      sourceNodeRef.current = null;
     }
-    window.speechSynthesis.cancel();
-    startNewUtterance(text, id);
+    setIsPlaying(false);
+    setActivePrayerId(null);
   };
 
-  const startNewUtterance = (text: string, id: string) => {
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'pt-BR';
-    utterance.rate = 0.85;
-    
-    utterance.onstart = () => {
-      setSpeechStatus('playing');
-      setActivePrayerId(id);
-    };
-    
-    utterance.onend = () => {
-      setSpeechStatus('stopped');
-      setActivePrayerId(null);
-    };
+  const handleRead = async (text: string, id: string) => {
+    // Se clicar no que já está tocando, para.
+    if (activePrayerId === id && isPlaying) {
+      stopAudio();
+      return;
+    }
 
-    window.speechSynthesis.speak(utterance);
+    stopAudio();
+    setLoadingAudioId(id);
+
+    try {
+      if (!audioContextRef.current) {
+        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+      }
+      
+      if (audioContextRef.current.state === 'suspended') {
+        await audioContextRef.current.resume();
+      }
+
+      const audioData = await generateSpeechAI(text);
+      if (audioData) {
+        const buffer = await decodePCM(audioData, audioContextRef.current);
+        const source = audioContextRef.current.createBufferSource();
+        source.buffer = buffer;
+        source.connect(audioContextRef.current.destination);
+        
+        source.onended = () => {
+          setIsPlaying(false);
+          setActivePrayerId(null);
+        };
+
+        source.start();
+        sourceNodeRef.current = source;
+        setIsPlaying(true);
+        setActivePrayerId(id);
+      }
+    } catch (error) {
+      console.error("Erro ao gerar áudio IA:", error);
+    } finally {
+      setLoadingAudioId(null);
+    }
   };
 
   const handleGeneratePrayer = async () => {
@@ -80,7 +101,7 @@ const PrayerPage: React.FC<PrayerProps> = ({ onBack }) => {
         <div className="w-12"></div>
       </header>
 
-      {/* AI Section: Elegant Card */}
+      {/* AI Section */}
       <section className="bg-white rounded-[40px] p-10 mb-12 shadow-[0_10px_40px_rgba(0,0,0,0.03)] border border-stone-100">
         <div className="flex items-center gap-3 mb-8">
           <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600">
@@ -88,12 +109,12 @@ const PrayerPage: React.FC<PrayerProps> = ({ onBack }) => {
           </div>
           <div>
             <h3 className="text-sm font-bold text-stone-900">Oração Personalizada</h3>
-            <p className="text-[10px] text-stone-400 font-bold uppercase tracking-widest">GERADA PELA IA</p>
+            <p className="text-[10px] text-stone-400 font-bold uppercase tracking-widest">VOZ IA PREMIUM</p>
           </div>
         </div>
         
         <div className="space-y-4">
-          <p className="text-stone-500 text-sm leading-relaxed mb-6 font-serif italic">Descreva seus sentimentos para receber uma oração exclusiva.</p>
+          <p className="text-stone-500 text-sm leading-relaxed mb-6 font-serif italic">Descreva seus sentimentos para receber uma oração exclusiva com narração inspiracional.</p>
           <div className="relative">
             <input 
               placeholder="Ex: Grato pela família, busca por paz..."
@@ -115,9 +136,10 @@ const PrayerPage: React.FC<PrayerProps> = ({ onBack }) => {
           <div className="mt-10 p-10 bg-stone-50 rounded-[32px] border border-stone-100 animate-in zoom-in duration-300">
             <p className="text-stone-800 font-serif italic text-xl leading-relaxed mb-8">"{generatedPrayer}"</p>
             <VoiceControlButton 
-              label={activePrayerId === 'ai-prayer' ? (speechStatus === 'playing' ? 'PAUSAR' : 'CONTINUAR') : 'OUVIR ORAÇÃO'} 
-              icon={activePrayerId === 'ai-prayer' && speechStatus === 'playing' ? <PauseIcon/> : <PlayIcon/>}
+              label={loadingAudioId === 'ai-prayer' ? 'GERANDO VOZ...' : (activePrayerId === 'ai-prayer' && isPlaying ? 'PARAR' : 'OUVIR ORAÇÃO IA')} 
+              icon={loadingAudioId === 'ai-prayer' ? <LoadingIcon/> : (activePrayerId === 'ai-prayer' && isPlaying ? <PauseIcon/> : <PlayIcon/>)}
               active={activePrayerId === 'ai-prayer'}
+              loading={loadingAudioId === 'ai-prayer'}
               onClick={() => handleRead(generatedPrayer, 'ai-prayer')}
             />
           </div>
@@ -146,9 +168,10 @@ const PrayerPage: React.FC<PrayerProps> = ({ onBack }) => {
              </div>
 
              <VoiceControlButton 
-                label={activePrayerId === p.id ? (speechStatus === 'playing' ? 'PAUSAR' : 'CONTINUAR') : 'OUVIR'} 
-                icon={activePrayerId === p.id && speechStatus === 'playing' ? <PauseIcon/> : <PlayIcon/>}
+                label={loadingAudioId === p.id ? 'GERANDO...' : (activePrayerId === p.id && isPlaying ? 'PARAR' : 'OUVIR COM IA')} 
+                icon={loadingAudioId === p.id ? <LoadingIcon/> : (activePrayerId === p.id && isPlaying ? <PauseIcon/> : <PlayIcon/>)}
                 active={activePrayerId === p.id}
+                loading={loadingAudioId === p.id}
                 onClick={() => handleRead(p.content, p.id)}
              />
           </div>
@@ -158,10 +181,11 @@ const PrayerPage: React.FC<PrayerProps> = ({ onBack }) => {
   );
 };
 
-const VoiceControlButton = ({ label, icon, active, onClick }: any) => (
+const VoiceControlButton = ({ label, icon, active, loading, onClick }: any) => (
   <button 
     onClick={onClick}
-    className={`w-full py-5 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] flex items-center justify-center gap-3 transition-all active:scale-95 ${active ? 'bg-amber-600 text-white shadow-xl shadow-amber-600/20' : 'bg-stone-50 text-stone-400 hover:bg-stone-100'}`}
+    disabled={loading}
+    className={`w-full py-5 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] flex items-center justify-center gap-3 transition-all active:scale-95 disabled:opacity-50 ${active ? 'bg-amber-600 text-white shadow-xl shadow-amber-600/20' : 'bg-stone-50 text-stone-400 hover:bg-stone-100'}`}
   >
     {icon}
     <span>{label}</span>
@@ -170,5 +194,6 @@ const VoiceControlButton = ({ label, icon, active, onClick }: any) => (
 
 const PlayIcon = () => <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4"><path d="M8 5v14l11-7z"/></svg>;
 const PauseIcon = () => <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>;
+const LoadingIcon = () => <div className="w-4 h-4 border-2 border-amber-500/30 border-t-amber-500 rounded-full animate-spin"></div>;
 
 export default PrayerPage;
