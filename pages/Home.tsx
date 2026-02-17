@@ -92,11 +92,11 @@ const LargeMenuCard = ({ title, subtitle, image, onClick, accent }: any) => (
 const SmallMenuCard = ({ title, subtitle, image, onClick }: any) => (
   <button onClick={onClick} className="relative h-56 rounded-[48px] overflow-hidden shadow-md group transition-all active:scale-95 text-left border border-white">
     <img src={image} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt={title} />
-    <div className="absolute inset-0 bg-stone-900/30"></div>
-    <div className="absolute inset-0 bg-gradient-to-b from-stone-900/60 to-transparent"></div>
+    <div className="absolute inset-0 bg-stone-900/40"></div>
+    <div className="absolute inset-0 bg-gradient-to-b from-stone-900/70 to-transparent"></div>
     <div className="absolute inset-0 flex flex-col p-8">
-      <span className="text-white/40 text-[9px] font-black uppercase tracking-widest mb-1">{title}</span>
-      <h3 className="text-white font-bold tracking-tight text-xl font-serif">{subtitle}</h3>
+      <span className="text-white/50 text-[9px] font-black uppercase tracking-widest mb-1">{title}</span>
+      <h3 className="text-white font-bold tracking-tight text-xl font-serif leading-tight">{subtitle}</h3>
     </div>
   </button>
 );

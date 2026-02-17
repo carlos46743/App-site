@@ -12,6 +12,7 @@ const PrayerPage: React.FC<PrayerProps> = ({ onBack }) => {
   const [activeTab, setActiveTab] = useState<'daily' | 'community'>('daily');
   const [prayers, setPrayers] = useState<Prayer[]>([]);
   const [communityRequests, setCommunityRequests] = useState<PrayerRequest[]>([]);
+  const [timeGreeting, setTimeGreeting] = useState({ label: '', icon: '', theme: '' });
   
   // Audio states
   const [isPlaying, setIsPlaying] = useState(false);
@@ -33,6 +34,17 @@ const PrayerPage: React.FC<PrayerProps> = ({ onBack }) => {
   useEffect(() => {
     setPrayers(DB.getPrayers());
     setCommunityRequests(DB.getCommunityPrayers());
+    
+    // Determine time-based greeting
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) {
+      setTimeGreeting({ label: 'Oração da Manhã', icon: '🌅', theme: 'gratidão e novo dia' });
+    } else if (hour >= 12 && hour < 18) {
+      setTimeGreeting({ label: 'Oração da Tarde', icon: '☀️', theme: 'fortalecimento e paz' });
+    } else {
+      setTimeGreeting({ label: 'Oração da Noite', icon: '🌙', theme: 'repouso e entrega' });
+    }
+
     return () => stopAudio();
   }, []);
 
@@ -111,7 +123,7 @@ const PrayerPage: React.FC<PrayerProps> = ({ onBack }) => {
   return (
     <div className="p-6 animate-in slide-in-from-bottom duration-500 pb-32 min-h-screen">
       <header className="flex items-center justify-between mb-8 py-6">
-        <button onClick={onBack} className="w-12 h-12 rounded-2xl bg-white border border-stone-100 flex items-center justify-center shadow-sm text-stone-400">
+        <button onClick={onBack} className="w-12 h-12 rounded-2xl bg-white border border-stone-100 flex items-center justify-center shadow-sm text-stone-400 active:scale-90">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5"><path d="m15 18-6-6 6-6"/></svg>
         </button>
         <div className="text-center">
@@ -120,6 +132,28 @@ const PrayerPage: React.FC<PrayerProps> = ({ onBack }) => {
         </div>
         <div className="w-12"></div>
       </header>
+
+      {/* Sugestão de Horário */}
+      <div className="mb-8 px-6 py-4 bg-amber-50 rounded-3xl border border-amber-100 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <span className="text-2xl">{timeGreeting.icon}</span>
+          <div>
+            <p className="text-[10px] font-black text-amber-800 uppercase tracking-widest">{timeGreeting.label}</p>
+            <p className="text-[10px] text-amber-600/60 font-medium">Sugerida para agora</p>
+          </div>
+        </div>
+        <button 
+          onClick={async () => {
+            setLoadingAudioId('time-prayer');
+            const res = await generatePrayerAI(timeGreeting.theme);
+            if(res) handleRead(res, 'time-prayer');
+          }}
+          disabled={loadingAudioId === 'time-prayer'}
+          className="bg-amber-600 text-white px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest active:scale-95 disabled:opacity-50"
+        >
+          {loadingAudioId === 'time-prayer' ? '...' : 'OUVIR'}
+        </button>
+      </div>
 
       {/* Navegação entre Orações e Mural */}
       <div className="flex bg-stone-100 p-1.5 rounded-[30px] mb-12">
@@ -140,7 +174,10 @@ const PrayerPage: React.FC<PrayerProps> = ({ onBack }) => {
       {activeTab === 'daily' ? (
         <div className="space-y-10 animate-in fade-in">
           {prayers.length === 0 && (
-            <div className="py-20 text-center text-stone-300 italic">Nenhuma oração pessoal salva. Use o Mentor IA para criar uma.</div>
+            <div className="py-20 text-center">
+               <div className="w-20 h-20 bg-stone-50 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl grayscale opacity-30">📜</div>
+               <p className="text-stone-300 italic text-sm">Nenhuma oração salva ainda.<br/>Use o Mentor IA para criar a sua.</p>
+            </div>
           )}
           {prayers.map(p => (
             <div key={p.id} className="bg-white rounded-[40px] p-10 border border-stone-100 shadow-sm">
@@ -160,7 +197,7 @@ const PrayerPage: React.FC<PrayerProps> = ({ onBack }) => {
         <div className="animate-in fade-in">
           <button 
             onClick={() => setShowForm(!showForm)}
-            className="w-full bg-stone-900 text-amber-500 py-6 rounded-[30px] font-black text-[10px] uppercase tracking-[0.3em] mb-12 shadow-xl"
+            className="w-full bg-stone-900 text-amber-500 py-6 rounded-[30px] font-black text-[10px] uppercase tracking-[0.3em] mb-12 shadow-xl active:scale-95 transition-all"
           >
             {showForm ? 'CANCELAR PEDIDO' : 'DEIXAR PEDIDO DE ORAÇÃO'}
           </button>
@@ -169,18 +206,18 @@ const PrayerPage: React.FC<PrayerProps> = ({ onBack }) => {
             <div className="bg-white p-10 rounded-[40px] border border-stone-100 shadow-lg mb-12 space-y-4 animate-in slide-in-from-top duration-300">
               <input 
                 placeholder="Seu Nome"
-                className="w-full bg-stone-50 border border-stone-100 rounded-2xl px-6 py-4 text-sm focus:outline-none"
+                className="w-full bg-stone-50 border border-stone-100 rounded-2xl px-6 py-4 text-sm focus:outline-none focus:bg-white transition-all"
                 value={newRequestName}
                 onChange={e => setNewRequestName(e.target.value)}
               />
               <textarea 
                 placeholder="Qual sua necessidade espiritual?"
                 rows={4}
-                className="w-full bg-stone-50 border border-stone-100 rounded-[32px] px-6 py-4 text-sm focus:outline-none"
+                className="w-full bg-stone-50 border border-stone-100 rounded-[32px] px-6 py-4 text-sm focus:outline-none focus:bg-white transition-all"
                 value={newRequestContent}
                 onChange={e => setNewRequestContent(e.target.value)}
               />
-              <button onClick={handlePostRequest} className="w-full bg-amber-600 text-white py-5 rounded-3xl font-black text-[10px] uppercase tracking-widest">ENVIAR AO MURAL</button>
+              <button onClick={handlePostRequest} className="w-full bg-amber-600 text-white py-5 rounded-3xl font-black text-[10px] uppercase tracking-widest shadow-lg active:scale-95 transition-all">ENVIAR AO MURAL</button>
             </div>
           )}
 
@@ -202,7 +239,7 @@ const PrayerPage: React.FC<PrayerProps> = ({ onBack }) => {
                     <span>🙏 AMÉM</span>
                     {req.amens > 0 && <span className="bg-amber-600 text-white px-2 py-0.5 rounded-full text-[8px]">{req.amens}</span>}
                   </button>
-                  <button onClick={() => setCommentingOn(commentingOn === req.id ? null : req.id)} className="flex-1 bg-stone-50 text-stone-400 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2">
+                  <button onClick={() => setCommentingOn(commentingOn === req.id ? null : req.id)} className="flex-1 bg-stone-50 text-stone-400 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95 transition-all">
                     <span>💬 APOIAR</span>
                     {req.comments?.length > 0 && <span>({req.comments.length})</span>}
                   </button>
@@ -222,12 +259,12 @@ const PrayerPage: React.FC<PrayerProps> = ({ onBack }) => {
                     <div className="flex gap-2">
                       <input 
                         placeholder="Deixe uma palavra de fé..."
-                        className="flex-1 bg-stone-100 border-none rounded-2xl px-5 py-3 text-xs outline-none"
+                        className="flex-1 bg-stone-100 border-none rounded-2xl px-5 py-3 text-xs outline-none focus:bg-stone-200 transition-all"
                         value={newComment}
                         onChange={e => setNewComment(e.target.value)}
                         onKeyPress={e => e.key === 'Enter' && handleAddComment(req.id)}
                       />
-                      <button onClick={() => handleAddComment(req.id)} className="bg-stone-900 text-white w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg">➜</button>
+                      <button onClick={() => handleAddComment(req.id)} className="bg-stone-900 text-white w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg active:scale-90 transition-all">➜</button>
                     </div>
                   </div>
                 )}
@@ -242,7 +279,7 @@ const PrayerPage: React.FC<PrayerProps> = ({ onBack }) => {
 };
 
 const VoiceBtn = ({ label, loading, active, onClick }: any) => (
-  <button onClick={onClick} disabled={loading} className={`w-full py-5 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] flex items-center justify-center gap-3 transition-all ${active ? 'bg-amber-600 text-white shadow-lg' : 'bg-stone-100 text-stone-400'}`}>
+  <button onClick={onClick} disabled={loading} className={`w-full py-5 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] flex items-center justify-center gap-3 transition-all ${active ? 'bg-amber-600 text-white shadow-lg' : 'bg-stone-100 text-stone-400 active:bg-stone-200'}`}>
     {loading ? <div className="w-3 h-3 border-2 border-stone-300 border-t-amber-500 rounded-full animate-spin"></div> : <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4"><path d="M8 5v14l11-7z"/></svg>}
     {label}
   </button>
