@@ -1,102 +1,89 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { AppTab } from '../types';
-import { askMentor } from '../geminiService';
 
 interface HomeProps {
   onNavigate: (tab: AppTab) => void;
 }
 
 const Home: React.FC<HomeProps> = ({ onNavigate }) => {
-  const [chatOpen, setChatOpen] = useState(false);
-  const [question, setQuestion] = useState('');
-  const [answer, setAnswer] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  const handleAsk = async () => {
-    if (!question) return;
-    setLoading(true);
-    const res = await askMentor(question);
-    setAnswer(res || '');
-    setLoading(false);
-  };
-
   return (
-    <div className="animate-in fade-in duration-700 pb-10">
-      <header className="px-6 py-12 text-center">
-        <div className="w-20 h-20 bg-amber-100 rounded-[30px] flex items-center justify-center mx-auto mb-4 shadow-inner">
-           <span className="text-4xl">🕊️</span>
-        </div>
-        <h1 className="text-4xl font-bold text-stone-800 tracking-tight font-serif">Pão Diário</h1>
-        <p className="text-stone-400 text-sm mt-2 font-medium tracking-wide">SABEDORIA QUE TRANSFORMA</p>
+    <div className="animate-in fade-in duration-700">
+      <header className="px-8 py-12">
+        <span className="text-[10px] font-black tracking-[0.3em] text-amber-600/60 uppercase mb-2 block">DEVOCIONAL DIÁRIO</span>
+        <h1 className="text-4xl font-bold text-stone-800 tracking-tight font-serif leading-none">Pão Vivo</h1>
       </header>
 
-      <div className="px-6 space-y-8">
-        {/* Versículo Principal */}
-        <div className="bg-white rounded-[40px] p-10 shadow-2xl shadow-stone-200/50 border border-stone-100 text-center relative overflow-hidden group">
-          <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-            <span className="text-8xl font-serif">"</span>
-          </div>
-          <span className="text-[10px] uppercase tracking-[0.2em] text-amber-600 font-bold mb-6 block">MEDITAÇÃO DE HOJE</span>
-          <p className="font-serif text-2xl text-stone-800 leading-snug mb-6 italic">
-            "Buscai primeiro o Reino de Deus e a sua justiça, e todas estas coisas vos serão acrescentadas."
+      <div className="px-6 space-y-6">
+        {/* Versículo de Destaque Android Style */}
+        <div className="bg-white rounded-[32px] p-8 shadow-sm border border-stone-100 relative overflow-hidden">
+          <div className="absolute -top-10 -right-10 w-32 h-32 bg-amber-50 rounded-full opacity-50"></div>
+          <p className="font-serif text-2xl text-stone-800 leading-tight mb-6 italic relative z-10">
+            "Lâmpada para os meus pés é tua palavra, e luz para o meu caminho."
           </p>
-          <div className="inline-flex items-center gap-3 bg-stone-50 px-6 py-2 rounded-full">
-            <span className="text-stone-700 font-bold text-sm italic">Mateus 6:33</span>
+          <div className="flex items-center gap-2">
+            <div className="h-px w-6 bg-amber-200"></div>
+            <span className="text-amber-700 font-bold text-xs tracking-wider">SALMOS 119:105</span>
           </div>
         </div>
 
-        {/* Grid de Navegação Principal */}
-        <nav className="grid grid-cols-2 gap-4">
-          <MenuCard title="Estudos" icon="📖" color="bg-stone-800" text="white" onClick={() => onNavigate('estudos')} />
-          <MenuCard title="Quiz" icon="💡" color="bg-amber-100" text="stone-800" onClick={() => onNavigate('quiz')} />
-          <MenuCard title="Orações" icon="🙏" color="bg-stone-100" text="stone-800" onClick={() => onNavigate('oracao')} />
-          <MenuCard title="Artigos" icon="✒️" color="bg-stone-50" text="stone-800" border="border-stone-200" onClick={() => onNavigate('artigos')} />
-        </nav>
+        {/* Menu Grid - Android Cards */}
+        <div className="grid grid-cols-2 gap-4">
+          <MenuButton 
+            title="Estudos" 
+            desc="Mergulhe na Palavra" 
+            icon="📖" 
+            bg="bg-stone-800" 
+            text="text-white"
+            onClick={() => onNavigate('estudos')} 
+          />
+          <MenuButton 
+            title="Quiz" 
+            desc="Teste seu saber" 
+            icon="💡" 
+            bg="bg-amber-100" 
+            text="text-stone-800"
+            onClick={() => onNavigate('quiz')} 
+          />
+          <MenuButton 
+            title="Orações" 
+            desc="Fale com Deus" 
+            icon="🙏" 
+            bg="bg-white" 
+            text="text-stone-800"
+            border="border-stone-100 shadow-sm"
+            onClick={() => onNavigate('oracao')} 
+          />
+          <MenuButton 
+            title="Artigos" 
+            desc="Reflexões" 
+            icon="✒️" 
+            bg="bg-stone-100" 
+            text="text-stone-800"
+            onClick={() => onNavigate('artigos')} 
+          />
+        </div>
       </div>
 
-      {/* Assistente IA Flutuante */}
-      <div className="fixed bottom-24 right-6 z-[60]">
-        <button 
-          onClick={() => setChatOpen(!chatOpen)}
-          className="w-16 h-16 bg-amber-600 rounded-full shadow-2xl flex items-center justify-center text-white text-2xl hover:scale-110 transition active:scale-95"
-        >
-          {chatOpen ? '✕' : '✨'}
-        </button>
-
-        {chatOpen && (
-          <div className="absolute bottom-20 right-0 w-[320px] bg-white rounded-[32px] shadow-2xl border border-stone-100 p-6 animate-in slide-in-from-bottom-4">
-             <h3 className="font-bold text-stone-800 mb-4 flex items-center gap-2">
-                <span>✨</span> Mentor Bíblico IA
-             </h3>
-             <div className="max-h-[300px] overflow-y-auto no-scrollbar mb-4 text-sm text-stone-600 leading-relaxed whitespace-pre-wrap">
-                {answer ? answer : "Olá! Qual sua dúvida bíblica hoje?"}
-                {loading && <p className="animate-pulse">Pensando...</p>}
-             </div>
-             <div className="flex gap-2">
-                <input 
-                  className="flex-1 bg-stone-50 border border-stone-100 rounded-full px-4 py-2 text-sm focus:outline-amber-600"
-                  placeholder="Pergunte algo..."
-                  value={question}
-                  onChange={e => setQuestion(e.target.value)}
-                  onKeyPress={e => e.key === 'Enter' && handleAsk()}
-                />
-                <button onClick={handleAsk} className="w-10 h-10 bg-stone-800 text-white rounded-full flex items-center justify-center">↑</button>
-             </div>
-          </div>
-        )}
-      </div>
+      <footer className="mt-16 mb-8 text-center">
+         <p className="text-[10px] font-bold text-stone-300 uppercase tracking-widest">© 2026 Missão Pão Vivo</p>
+      </footer>
     </div>
   );
 };
 
-const MenuCard = ({ title, icon, color, text, border, onClick }: any) => (
+const MenuButton = ({ title, desc, icon, bg, text, border, onClick }: any) => (
   <button 
     onClick={onClick}
-    className={`${color} ${border || ''} p-8 rounded-[35px] flex flex-col items-center gap-3 transition hover:shadow-lg active:scale-95`}
+    className={`${bg} ${text} ${border || ''} p-6 rounded-[32px] flex flex-col items-start gap-4 transition-all active:scale-95 text-left`}
   >
-    <span className="text-3xl">{icon}</span>
-    <span className={`font-bold text-${text} tracking-tight`}>{title}</span>
+    <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center text-2xl backdrop-blur-sm border border-white/10">
+      {icon}
+    </div>
+    <div>
+      <h3 className="font-bold text-base leading-none mb-1">{title}</h3>
+      <p className="text-[10px] opacity-60 font-medium uppercase tracking-tighter">{desc}</p>
+    </div>
   </button>
 );
 

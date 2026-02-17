@@ -3,57 +3,63 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pão Diário - Sua Devocional</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Pão Diário</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Literata:opsz,wght@7..72,400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --parchment: #faf7f2;
-      --gold: #b48a4d;
-      --ink: #2c2c2c;
+      --android-bg: #fdf8f3;
+      --android-surface: #ffffff;
+      --android-primary: #3d2f1d;
+      --android-accent: #b48a4d;
     }
     body {
       font-family: 'Inter', sans-serif;
-      background-color: var(--parchment);
-      color: var(--ink);
+      background-color: var(--android-bg);
+      color: var(--android-primary);
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
     }
     .font-serif {
       font-family: 'Literata', serif;
     }
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    .glass {
-      background: rgba(255, 255, 255, 0.7);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+    
+    /* Efeito de clique Android (Ripple simulado) */
+    .android-ripple:active {
+      background-color: rgba(0, 0, 0, 0.05);
+      transform: scale(0.98);
+      transition: all 0.1s ease;
     }
-    .card-shadow {
-      box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05);
+    
+    .safe-bottom {
+      padding-bottom: env(safe-area-inset-bottom);
     }
-    .animate-float {
-      animation: float 6s ease-in-out infinite;
-    }
-    @keyframes float {
-      0% { transform: translateY(0px); }
-      50% { transform: translateY(-10px); }
-      100% { transform: translateY(0px); }
+
+    .glass-nav {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
     }
   </style>
   <script type="importmap">
-{
-  "imports": {
-    "react": "https://esm.sh/react@^19.2.4",
-    "react-dom": "https://esm.sh/react-dom@^19.2.4",
-    "react-dom/client": "https://esm.sh/react-dom@^19.2.4/client",
-    "@google/genai": "https://esm.sh/@google/genai@^1.41.0",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
-    "react/": "https://esm.sh/react@^19.2.4/"
+  {
+    "imports": {
+      "react": "https://esm.sh/react@^19.2.4",
+      "react-dom": "https://esm.sh/react-dom@^19.2.4",
+      "react-dom/client": "https://esm.sh/react-dom@^19.2.4/client",
+      "@google/genai": "https://esm.sh/@google/genai@^1.41.0",
+      "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+      "react/": "https://esm.sh/react@^19.2.4/"
+    }
   }
-}
-</script>
+  </script>
 </head>
-<body className="antialiased">
+<body class="antialiased overflow-x-hidden">
   <div id="root"></div>
   <script type="module" src="index.tsx"></script>
 </body>

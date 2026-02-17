@@ -1,6 +1,18 @@
 {
-  "name": "Estudo Bíblico Diário",
-  "description": "Um aplicativo devocional completo para leitura bíblica, reflexão, orações e quiz, com suporte a IA para aprofundamento teológico.",
+  "name": "Pão Diário",
+  "short_name": "PãoDiário",
+  "description": "Sua dose diária de sabedoria bíblica com IA.",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2903/2903523.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#FAF7F2",
+  "theme_color": "#B48A4D",
   "requestFramePermissions": [
     "microphone"
   ]
