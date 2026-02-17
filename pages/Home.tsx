@@ -51,7 +51,7 @@ const Home: React.FC<HomeProps> = ({ onNavigate }) => {
         <div className="space-y-6">
           <LargeMenuCard 
             title="Jornada de 7 Dias"
-            subtitle="O ciclo completo de renovação espiritual"
+            subtitle="Ciclo de renovação espiritual"
             image="https://images.unsplash.com/photo-1507434965515-61970f2bd7c6?auto=format&fit=crop&q=80&w=800"
             onClick={() => onNavigate('estudos')}
             accent="bg-amber-600"
@@ -67,7 +67,7 @@ const Home: React.FC<HomeProps> = ({ onNavigate }) => {
              <SmallMenuCard 
                 title="Momento"
                 subtitle="Orações"
-                image="https://images.unsplash.com/photo-1490730141103-6ac27d02047f?auto=format&fit=crop&q=80&w=400"
+                image="https://images.unsplash.com/photo-1445445290250-d8a346a0e2cb?auto=format&fit=crop&q=80&w=400"
                 onClick={() => onNavigate('oracao')}
              />
           </div>

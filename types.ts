@@ -29,6 +29,22 @@ export interface Prayer {
   date: string;
 }
 
+export interface Comment {
+  id: string;
+  userName: string;
+  content: string;
+  timestamp: number;
+}
+
+export interface PrayerRequest {
+  id: string;
+  userName: string;
+  content: string;
+  timestamp: number;
+  amens: number;
+  comments: Comment[];
+}
+
 export interface QuizQuestion {
   id: string;
   question: string;
