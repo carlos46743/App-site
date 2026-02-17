@@ -37,4 +37,4 @@ export interface QuizQuestion {
   explanation?: string;
 }
 
-export type AppTab = 'home' | 'estudos' | 'quiz' | 'oracao' | 'artigos' | 'admin';
+export type AppTab = 'home' | 'estudos' | 'quiz' | 'oracao' | 'artigos';

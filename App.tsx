@@ -6,16 +6,14 @@ import Studies from './pages/Studies';
 import Quiz from './pages/Quiz';
 import PrayerPage from './pages/Prayer';
 import Articles from './pages/Articles';
-import Admin from './pages/Admin';
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<AppTab>('home');
 
-  // Handle back button behavior for the custom SPA navigation
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.replace('#', '') as AppTab;
-      if (['home', 'estudos', 'quiz', 'oracao', 'artigos', 'admin'].includes(hash)) {
+      if (['home', 'estudos', 'quiz', 'oracao', 'artigos'].includes(hash)) {
         setActiveTab(hash);
       } else {
         setActiveTab('home');
@@ -39,7 +37,6 @@ const App: React.FC = () => {
       case 'quiz': return <Quiz onBack={() => navigateTo('home')} />;
       case 'oracao': return <PrayerPage onBack={() => navigateTo('home')} />;
       case 'artigos': return <Articles onBack={() => navigateTo('home')} />;
-      case 'admin': return <Admin onBack={() => navigateTo('home')} />;
       default: return <Home onNavigate={navigateTo} />;
     }
   };
@@ -50,16 +47,20 @@ const App: React.FC = () => {
         {renderContent()}
       </main>
 
-      {/* Persistent Navigation Bar for Home View */}
+      {/* Navegação Simplificada - Sem Admin */}
       {activeTab === 'home' && (
         <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/80 backdrop-blur-md border-t border-stone-200 py-3 px-6 flex justify-around items-center z-50">
-          <button onClick={() => navigateTo('home')} className="flex flex-col items-center text-stone-400 hover:text-amber-600 transition">
+          <button onClick={() => navigateTo('home')} className="flex flex-col items-center text-amber-600 transition">
              <span className="text-xl">🏠</span>
-             <span className="text-[10px] font-medium mt-1">Início</span>
+             <span className="text-[10px] font-bold mt-1">Início</span>
           </button>
-          <button onClick={() => navigateTo('admin')} className="flex flex-col items-center text-stone-400 hover:text-amber-600 transition">
-             <span className="text-xl">⚙️</span>
-             <span className="text-[10px] font-medium mt-1">Admin</span>
+          <button onClick={() => navigateTo('estudos')} className="flex flex-col items-center text-stone-400 hover:text-amber-600 transition">
+             <span className="text-xl">📖</span>
+             <span className="text-[10px] font-medium mt-1">Estudos</span>
+          </button>
+          <button onClick={() => navigateTo('artigos')} className="flex flex-col items-center text-stone-400 hover:text-amber-600 transition">
+             <span className="text-xl">✒️</span>
+             <span className="text-[10px] font-medium mt-1">Reflexões</span>
           </button>
         </div>
       )}
