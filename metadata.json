@@ -1,0 +1,7 @@
+{
+  "name": "Estudo Bíblico Diário",
+  "description": "Um aplicativo devocional completo para leitura bíblica, reflexão, orações e quiz, com suporte a IA para aprofundamento teológico.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
