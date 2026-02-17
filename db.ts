@@ -42,30 +42,37 @@ const defaultStudies: Study[] = [
     date: 'Dia 3',
     image: 'https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&q=80&w=800',
     timestamp: Date.now()
+  },
+  {
+    id: '4',
+    title: 'O Amor ao Próximo',
+    verse: 'Amai-vos uns aos outros como eu vos amei.',
+    explanation: 'O amor cristão é ação, não apenas sentimento. É colocar a necessidade do outro acima da nossa.',
+    application: 'Faça um gesto de bondade anônimo hoje.',
+    prayer: 'Senhor, ensina-me a amar de verdade...',
+    date: 'Dia 4',
+    image: 'https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&q=80&w=800',
+    timestamp: Date.now()
   }
 ];
 
 export const verses = [
   { text: "Lâmpada para os meus pés é tua palavra, e luz para o meu caminho.", ref: "Salmos 119:105" },
   { text: "O Senhor é o meu pastor, nada me faltará.", ref: "Salmos 23:1" },
-  { text: "Tudo posso naquele que me fortalece.", ref: "Filipenses 4:13" },
-  { text: "Buscai primeiro o reino de Deus e a sua justiça.", ref: "Mateus 6:33" }
+  { text: "Tudo posso naquele que me fortalece.", ref: "Filipenses 4:13" }
 ];
 
 export const DB = {
   getVerses: () => verses,
-  
   getCommunityPrayers: (): PrayerRequest[] => {
     const stored = localStorage.getItem(STORAGE_KEYS.COMMUNITY_PRAYERS);
     return stored ? JSON.parse(stored) : [];
   },
-
   saveCommunityPrayer: (request: PrayerRequest) => {
     const requests = DB.getCommunityPrayers();
     requests.unshift(request);
     localStorage.setItem(STORAGE_KEYS.COMMUNITY_PRAYERS, JSON.stringify(requests));
   },
-
   addAmen: (id: string) => {
     const requests = DB.getCommunityPrayers();
     const idx = requests.findIndex(r => r.id === id);
@@ -74,7 +81,6 @@ export const DB = {
       localStorage.setItem(STORAGE_KEYS.COMMUNITY_PRAYERS, JSON.stringify(requests));
     }
   },
-
   addComment: (prayerId: string, comment: Comment) => {
     const requests = DB.getCommunityPrayers();
     const idx = requests.findIndex(r => r.id === prayerId);
@@ -84,7 +90,6 @@ export const DB = {
       localStorage.setItem(STORAGE_KEYS.COMMUNITY_PRAYERS, JSON.stringify(requests));
     }
   },
-
   getStudies: (): Study[] => {
     const stored = localStorage.getItem(STORAGE_KEYS.STUDIES);
     const studies = stored ? JSON.parse(stored) : [];
@@ -93,10 +98,6 @@ export const DB = {
   saveStudy: (study: Study) => {
     const studies = JSON.parse(localStorage.getItem(STORAGE_KEYS.STUDIES) || '[]');
     studies.push(study);
-    localStorage.setItem(STORAGE_KEYS.STUDIES, JSON.stringify(studies));
-  },
-  deleteStudy: (id: string) => {
-    const studies = JSON.parse(localStorage.getItem(STORAGE_KEYS.STUDIES) || '[]').filter((s: any) => s.id !== id);
     localStorage.setItem(STORAGE_KEYS.STUDIES, JSON.stringify(studies));
   },
   getArticles: (): Article[] => {
@@ -108,10 +109,6 @@ export const DB = {
     articles.push(article);
     localStorage.setItem(STORAGE_KEYS.ARTICLES, JSON.stringify(articles));
   },
-  deleteArticle: (id: string) => {
-    const articles = DB.getArticles().filter(a => a.id !== id);
-    localStorage.setItem(STORAGE_KEYS.ARTICLES, JSON.stringify(articles));
-  },
   getQuiz: (): QuizQuestion[] => {
     const stored = localStorage.getItem(STORAGE_KEYS.QUIZ);
     return stored ? JSON.parse(stored) : [];
@@ -119,10 +116,6 @@ export const DB = {
   saveQuizQuestion: (question: QuizQuestion) => {
     const quiz = DB.getQuiz();
     quiz.push(question);
-    localStorage.setItem(STORAGE_KEYS.QUIZ, JSON.stringify(quiz));
-  },
-  deleteQuizQuestion: (id: string) => {
-    const quiz = DB.getQuiz().filter(q => q.id !== id);
     localStorage.setItem(STORAGE_KEYS.QUIZ, JSON.stringify(quiz));
   },
   getPrayers: (): Prayer[] => {
@@ -133,6 +126,18 @@ export const DB = {
     const prayers = DB.getPrayers();
     prayers.push(prayer);
     localStorage.setItem(STORAGE_KEYS.PRAYERS, JSON.stringify(prayers));
+  },
+  deleteStudy: (id: string) => {
+    const studies = DB.getStudies().filter(s => s.id !== id);
+    localStorage.setItem(STORAGE_KEYS.STUDIES, JSON.stringify(studies));
+  },
+  deleteArticle: (id: string) => {
+    const articles = DB.getArticles().filter(a => a.id !== id);
+    localStorage.setItem(STORAGE_KEYS.ARTICLES, JSON.stringify(articles));
+  },
+  deleteQuizQuestion: (id: string) => {
+    const quiz = DB.getQuiz().filter(q => q.id !== id);
+    localStorage.setItem(STORAGE_KEYS.QUIZ, JSON.stringify(quiz));
   },
   deletePrayer: (id: string) => {
     const prayers = DB.getPrayers().filter(p => p.id !== id);

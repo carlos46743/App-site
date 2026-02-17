@@ -17,8 +17,8 @@ const Home: React.FC<HomeProps> = ({ onNavigate }) => {
   }, []);
 
   return (
-    <div className="animate-in fade-in duration-700 pb-10">
-      <header className="px-8 pt-16 pb-12">
+    <div className="animate-in fade-in duration-700 pb-20 pt-10">
+      <header className="px-8 pt-12 pb-10">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-6 h-[2px] bg-amber-500 rounded-full"></div>
           <span className="text-[10px] font-black tracking-[0.5em] text-stone-400 uppercase">ESSÊNCIA DIÁRIA</span>
@@ -29,7 +29,8 @@ const Home: React.FC<HomeProps> = ({ onNavigate }) => {
       </header>
 
       <div className="px-6 space-y-10">
-        <div className="relative group overflow-hidden rounded-[48px] bg-stone-900 p-12 shadow-2xl transition-all active:scale-[0.98] border border-stone-800">
+        {/* Versículo do Dia Card */}
+        <div className="relative group overflow-hidden rounded-[48px] bg-stone-900 p-10 shadow-2xl transition-all active:scale-[0.98] border border-stone-800">
           <div className="absolute inset-0 opacity-10 mix-blend-overlay">
             <img src="https://images.unsplash.com/photo-1504052434569-70ad5836ab65?auto=format&fit=crop&q=80&w=800" className="w-full h-full object-cover" alt="Background" />
           </div>
@@ -57,7 +58,7 @@ const Home: React.FC<HomeProps> = ({ onNavigate }) => {
             accent="bg-amber-600"
           />
           
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-2 gap-6 pb-10">
              <SmallMenuCard 
                 title="Desafio"
                 subtitle="Quiz Bíblico"
@@ -65,7 +66,7 @@ const Home: React.FC<HomeProps> = ({ onNavigate }) => {
                 onClick={() => onNavigate('quiz')}
              />
              <SmallMenuCard 
-                title="Momentos"
+                title="Comunidade"
                 subtitle="Orações & Mural"
                 image="https://images.unsplash.com/photo-1445445290250-d8a346a0e2cb?auto=format&fit=crop&q=80&w=800"
                 onClick={() => onNavigate('oracao')}
@@ -78,11 +79,11 @@ const Home: React.FC<HomeProps> = ({ onNavigate }) => {
 };
 
 const LargeMenuCard = ({ title, subtitle, image, onClick, accent }: any) => (
-  <button onClick={onClick} className="relative w-full h-72 rounded-[48px] overflow-hidden shadow-lg group transition-all active:scale-95 text-left border border-white">
+  <button onClick={onClick} className="relative w-full h-72 rounded-[48px] overflow-hidden shadow-xl group transition-all active:scale-95 text-left border border-white">
     <img src={image} className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" alt={title} />
-    <div className="absolute inset-0 bg-gradient-to-t from-stone-900/90 via-stone-900/20 to-transparent"></div>
+    <div className="absolute inset-0 bg-gradient-to-t from-stone-900/95 via-stone-900/20 to-transparent"></div>
     <div className="absolute bottom-10 left-10 right-10">
-      <div className={`inline-block px-4 py-1.5 rounded-full ${accent} text-white text-[9px] font-black uppercase tracking-widest mb-4`}>VER ESTUDOS</div>
+      <div className={`inline-block px-4 py-1.5 rounded-full ${accent} text-white text-[9px] font-black uppercase tracking-widest mb-4`}>COMEÇAR JORNADA</div>
       <h3 className="text-3xl font-bold text-white mb-2 font-serif">{title}</h3>
       <p className="text-white/60 text-xs font-medium tracking-tight">{subtitle}</p>
     </div>
@@ -90,10 +91,10 @@ const LargeMenuCard = ({ title, subtitle, image, onClick, accent }: any) => (
 );
 
 const SmallMenuCard = ({ title, subtitle, image, onClick }: any) => (
-  <button onClick={onClick} className="relative h-56 rounded-[48px] overflow-hidden shadow-md group transition-all active:scale-95 text-left border border-white bg-stone-100">
+  <button onClick={onClick} className="relative h-60 rounded-[48px] overflow-hidden shadow-lg group transition-all active:scale-95 text-left border border-white bg-stone-100">
     <img src={image} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt={title} />
     <div className="absolute inset-0 bg-stone-900/40"></div>
-    <div className="absolute inset-0 bg-gradient-to-b from-stone-900/70 to-transparent"></div>
+    <div className="absolute inset-0 bg-gradient-to-b from-stone-900/80 to-transparent"></div>
     <div className="absolute inset-0 flex flex-col p-8">
       <span className="text-white/50 text-[9px] font-black uppercase tracking-widest mb-1">{title}</span>
       <h3 className="text-white font-bold tracking-tight text-xl font-serif leading-tight">{subtitle}</h3>

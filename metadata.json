@@ -1,18 +1,21 @@
 {
-  "name": "Pão Diário",
+  "name": "Pão Diário - Essência Sagrada",
   "short_name": "PãoDiário",
-  "description": "Sua dose diária de sabedoria bíblica com IA.",
+  "description": "Sua jornada espiritual diária com auxílio de Inteligência Artificial.",
   "icons": [
     {
       "src": "https://cdn-icons-png.flaticon.com/512/2903/2903523.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ],
   "start_url": "/index.html",
   "display": "standalone",
-  "background_color": "#FAF7F2",
+  "orientation": "portrait",
+  "background_color": "#FDFBF7",
   "theme_color": "#B48A4D",
+  "scope": "/",
   "requestFramePermissions": [
     "microphone"
   ]

@@ -14,17 +14,12 @@ const PrayerPage: React.FC<PrayerProps> = ({ onBack }) => {
   const [communityRequests, setCommunityRequests] = useState<PrayerRequest[]>([]);
   const [timeGreeting, setTimeGreeting] = useState({ label: '', icon: '', theme: '' });
   
-  // Audio states
   const [isPlaying, setIsPlaying] = useState(false);
   const [loadingAudioId, setLoadingAudioId] = useState<string | null>(null);
   const [activePrayerId, setActivePrayerId] = useState<string | null>(null);
-  
-  // New Request states
+  const [showForm, setShowForm] = useState(false);
   const [newRequestName, setNewRequestName] = useState('');
   const [newRequestContent, setNewRequestContent] = useState('');
-  const [showForm, setShowForm] = useState(false);
-
-  // Comment states
   const [commentingOn, setCommentingOn] = useState<string | null>(null);
   const [newComment, setNewComment] = useState('');
 
@@ -35,7 +30,6 @@ const PrayerPage: React.FC<PrayerProps> = ({ onBack }) => {
     setPrayers(DB.getPrayers());
     setCommunityRequests(DB.getCommunityPrayers());
     
-    // Determine time-based greeting
     const hour = new Date().getHours();
     if (hour >= 5 && hour < 12) {
       setTimeGreeting({ label: 'Oração da Manhã', icon: '🌅', theme: 'gratidão e novo dia' });
@@ -44,7 +38,6 @@ const PrayerPage: React.FC<PrayerProps> = ({ onBack }) => {
     } else {
       setTimeGreeting({ label: 'Oração da Noite', icon: '🌙', theme: 'repouso e entrega' });
     }
-
     return () => stopAudio();
   }, []);
 
@@ -86,60 +79,34 @@ const PrayerPage: React.FC<PrayerProps> = ({ onBack }) => {
 
   const handlePostRequest = () => {
     if (!newRequestName || !newRequestContent) return;
-    const req: PrayerRequest = {
+    DB.saveCommunityPrayer({
       id: Date.now().toString(),
       userName: newRequestName,
       content: newRequestContent,
       timestamp: Date.now(),
       amens: 0,
       comments: []
-    };
-    DB.saveCommunityPrayer(req);
+    });
     setCommunityRequests(DB.getCommunityPrayers());
-    setNewRequestName('');
-    setNewRequestContent('');
-    setShowForm(false);
-  };
-
-  const handleAddAmen = (id: string) => {
-    DB.addAmen(id);
-    setCommunityRequests(DB.getCommunityPrayers());
-  };
-
-  const handleAddComment = (prayerId: string) => {
-    if (!newComment) return;
-    const comment: Comment = {
-      id: Date.now().toString(),
-      userName: 'Intercessor',
-      content: newComment,
-      timestamp: Date.now()
-    };
-    DB.addComment(prayerId, comment);
-    setCommunityRequests(DB.getCommunityPrayers());
-    setNewComment('');
-    setCommentingOn(null);
+    setNewRequestName(''); setNewRequestContent(''); setShowForm(false);
   };
 
   return (
     <div className="p-6 animate-in slide-in-from-bottom duration-500 pb-32 min-h-screen">
       <header className="flex items-center justify-between mb-8 py-6">
-        <button onClick={onBack} className="w-12 h-12 rounded-2xl bg-white border border-stone-100 flex items-center justify-center shadow-sm text-stone-400 active:scale-90">
+        <button onClick={onBack} className="w-12 h-12 rounded-2xl bg-white border border-stone-100 flex items-center justify-center shadow-sm text-stone-400">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5"><path d="m15 18-6-6 6-6"/></svg>
         </button>
-        <div className="text-center">
-          <h2 className="text-[10px] font-black text-stone-900 uppercase tracking-[0.4em]">COMUNHÃO</h2>
-          <div className="w-4 h-0.5 bg-amber-500 mx-auto mt-2 rounded-full"></div>
-        </div>
+        <h2 className="text-[10px] font-black text-stone-900 uppercase tracking-[0.4em]">COMUNHÃO</h2>
         <div className="w-12"></div>
       </header>
 
-      {/* Sugestão de Horário */}
-      <div className="mb-8 px-6 py-4 bg-amber-50 rounded-3xl border border-amber-100 flex items-center justify-between">
+      <div className="mb-8 px-6 py-5 bg-amber-50 rounded-[32px] border border-amber-100 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-3">
-          <span className="text-2xl">{timeGreeting.icon}</span>
+          <span className="text-3xl">{timeGreeting.icon}</span>
           <div>
             <p className="text-[10px] font-black text-amber-800 uppercase tracking-widest">{timeGreeting.label}</p>
-            <p className="text-[10px] text-amber-600/60 font-medium">Sugerida para agora</p>
+            <p className="text-[9px] text-amber-600/60 font-medium">Momento de reflexão</p>
           </div>
         </div>
         <button 
@@ -149,140 +116,73 @@ const PrayerPage: React.FC<PrayerProps> = ({ onBack }) => {
             if(res) handleRead(res, 'time-prayer');
           }}
           disabled={loadingAudioId === 'time-prayer'}
-          className="bg-amber-600 text-white px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest active:scale-95 disabled:opacity-50"
+          className="bg-amber-600 text-white px-5 py-2.5 rounded-2xl text-[9px] font-black uppercase tracking-widest shadow-lg shadow-amber-600/20 active:scale-95"
         >
           {loadingAudioId === 'time-prayer' ? '...' : 'OUVIR'}
         </button>
       </div>
 
-      {/* Navegação entre Orações e Mural */}
       <div className="flex bg-stone-100 p-1.5 rounded-[30px] mb-12">
-        <button 
-          onClick={() => setActiveTab('daily')}
-          className={`flex-1 py-4 rounded-[24px] text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'daily' ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-400'}`}
-        >
-          Minhas Orações
-        </button>
-        <button 
-          onClick={() => setActiveTab('community')}
-          className={`flex-1 py-4 rounded-[24px] text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'community' ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-400'}`}
-        >
-          Mural da Fé
-        </button>
+        <button onClick={() => setActiveTab('daily')} className={`flex-1 py-4 rounded-[24px] text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'daily' ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-400'}`}>Mural Local</button>
+        <button onClick={() => setActiveTab('community')} className={`flex-1 py-4 rounded-[24px] text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'community' ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-400'}`}>Mural da Fé</button>
       </div>
 
       {activeTab === 'daily' ? (
         <div className="space-y-10 animate-in fade-in">
-          {prayers.length === 0 && (
-            <div className="py-20 text-center">
-               <div className="w-20 h-20 bg-stone-50 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl grayscale opacity-30">📜</div>
-               <p className="text-stone-300 italic text-sm">Nenhuma oração salva ainda.<br/>Use o Mentor IA para criar a sua.</p>
-            </div>
-          )}
+          {prayers.length === 0 && <div className="py-20 text-center opacity-30 text-stone-400 italic">Nenhuma oração pessoal.</div>}
           {prayers.map(p => (
             <div key={p.id} className="bg-white rounded-[40px] p-10 border border-stone-100 shadow-sm">
               <span className="text-[9px] font-black text-amber-600 uppercase tracking-widest block mb-4">{p.type} • {p.date}</span>
-              <h4 className="font-serif text-2xl font-bold mb-4">{p.title}</h4>
               <p className="font-serif text-stone-500 italic text-xl mb-8 leading-relaxed">"{p.content}"</p>
-              <VoiceBtn 
-                label={loadingAudioId === p.id ? 'GERANDO...' : (activePrayerId === p.id && isPlaying ? 'PARAR' : 'OUVIR COM IA')} 
-                loading={loadingAudioId === p.id}
-                active={activePrayerId === p.id}
-                onClick={() => handleRead(p.content, p.id)}
-              />
+              <button onClick={() => handleRead(p.content, p.id)} className={`w-full py-5 rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-3 ${activePrayerId === p.id ? 'bg-amber-600 text-white' : 'bg-stone-50 text-stone-400'}`}>
+                {loadingAudioId === p.id ? 'GERANDO...' : 'OUVIR COM IA'}
+              </button>
             </div>
           ))}
         </div>
       ) : (
         <div className="animate-in fade-in">
-          <button 
-            onClick={() => setShowForm(!showForm)}
-            className="w-full bg-stone-900 text-amber-500 py-6 rounded-[30px] font-black text-[10px] uppercase tracking-[0.3em] mb-12 shadow-xl active:scale-95 transition-all"
-          >
-            {showForm ? 'CANCELAR PEDIDO' : 'DEIXAR PEDIDO DE ORAÇÃO'}
+          <button onClick={() => setShowForm(!showForm)} className="w-full bg-stone-900 text-amber-500 py-6 rounded-[30px] font-black text-[10px] uppercase tracking-[0.3em] mb-12 shadow-xl active:scale-95">
+            {showForm ? 'CANCELAR' : 'DEIXAR PEDIDO DE ORAÇÃO'}
           </button>
-
           {showForm && (
-            <div className="bg-white p-10 rounded-[40px] border border-stone-100 shadow-lg mb-12 space-y-4 animate-in slide-in-from-top duration-300">
-              <input 
-                placeholder="Seu Nome"
-                className="w-full bg-stone-50 border border-stone-100 rounded-2xl px-6 py-4 text-sm focus:outline-none focus:bg-white transition-all"
-                value={newRequestName}
-                onChange={e => setNewRequestName(e.target.value)}
-              />
-              <textarea 
-                placeholder="Qual sua necessidade espiritual?"
-                rows={4}
-                className="w-full bg-stone-50 border border-stone-100 rounded-[32px] px-6 py-4 text-sm focus:outline-none focus:bg-white transition-all"
-                value={newRequestContent}
-                onChange={e => setNewRequestContent(e.target.value)}
-              />
-              <button onClick={handlePostRequest} className="w-full bg-amber-600 text-white py-5 rounded-3xl font-black text-[10px] uppercase tracking-widest shadow-lg active:scale-95 transition-all">ENVIAR AO MURAL</button>
+            <div className="bg-white p-10 rounded-[40px] border border-stone-100 shadow-lg mb-12 space-y-4">
+              <input placeholder="Seu Nome" className="w-full bg-stone-50 border-none rounded-2xl px-6 py-4 text-sm outline-none" value={newRequestName} onChange={e => setNewRequestName(e.target.value)} />
+              <textarea placeholder="Pedido de Oração..." rows={4} className="w-full bg-stone-50 border-none rounded-[32px] px-6 py-4 text-sm outline-none" value={newRequestContent} onChange={e => setNewRequestContent(e.target.value)} />
+              <button onClick={handlePostRequest} className="w-full bg-amber-600 text-white py-5 rounded-3xl font-black text-[10px] uppercase tracking-widest">PUBLICAR NO MURAL</button>
             </div>
           )}
-
-          <div className="space-y-8">
+          <div className="space-y-8 pb-20">
             {communityRequests.map(req => (
               <div key={req.id} className="bg-white rounded-[40px] p-10 border border-stone-100 shadow-sm">
                 <div className="flex justify-between items-center mb-6">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-stone-100 flex items-center justify-center text-stone-400 font-bold text-sm">{req.userName.charAt(0)}</div>
-                    <span className="text-sm font-bold text-stone-900">{req.userName}</span>
-                  </div>
-                  <span className="text-[10px] font-bold text-stone-300 uppercase tracking-tighter">{new Date(req.timestamp).toLocaleDateString()}</span>
+                  <span className="text-sm font-bold text-stone-900">{req.userName}</span>
+                  <span className="text-[10px] font-bold text-stone-300 uppercase">{new Date(req.timestamp).toLocaleDateString()}</span>
                 </div>
-                
                 <p className="font-serif text-stone-600 leading-relaxed text-lg mb-8 italic">"{req.content}"</p>
-                
-                <div className="flex gap-4 items-center">
-                  <button onClick={() => handleAddAmen(req.id)} className="flex-1 bg-amber-50 text-amber-600 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95 transition-all">
-                    <span>🙏 AMÉM</span>
-                    {req.amens > 0 && <span className="bg-amber-600 text-white px-2 py-0.5 rounded-full text-[8px]">{req.amens}</span>}
+                <div className="flex gap-4">
+                  <button onClick={() => { DB.addAmen(req.id); setCommunityRequests(DB.getCommunityPrayers()); }} className="flex-1 bg-amber-50 text-amber-600 py-4 rounded-2xl text-[10px] font-black uppercase flex items-center justify-center gap-2 active:scale-95 transition-all">
+                    🙏 AMÉM {req.amens > 0 && `(${req.amens})`}
                   </button>
-                  <button onClick={() => setCommentingOn(commentingOn === req.id ? null : req.id)} className="flex-1 bg-stone-50 text-stone-400 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95 transition-all">
-                    <span>💬 APOIAR</span>
-                    {req.comments?.length > 0 && <span>({req.comments.length})</span>}
+                  <button onClick={() => setCommentingOn(commentingOn === req.id ? null : req.id)} className="flex-1 bg-stone-50 text-stone-400 py-4 rounded-2xl text-[10px] font-black uppercase flex items-center justify-center gap-2">
+                    💬 APOIAR {req.comments?.length > 0 && `(${req.comments.length})`}
                   </button>
                 </div>
-
                 {commentingOn === req.id && (
-                  <div className="mt-8 pt-8 border-t border-stone-50 space-y-6">
-                    <div className="space-y-4">
-                      {req.comments?.map(c => (
-                        <div key={c.id} className="bg-stone-50 p-4 rounded-2xl">
-                           <p className="text-xs text-stone-600 leading-relaxed">
-                             <span className="font-black text-amber-600 mr-2">{c.userName}:</span> {c.content}
-                           </p>
-                        </div>
-                      ))}
-                    </div>
+                  <div className="mt-8 pt-8 border-t border-stone-50 space-y-4">
+                    {req.comments?.map(c => <div key={c.id} className="bg-stone-50 p-4 rounded-2xl text-xs text-stone-600"><span className="font-bold text-amber-600">{c.userName}:</span> {c.content}</div>)}
                     <div className="flex gap-2">
-                      <input 
-                        placeholder="Deixe uma palavra de fé..."
-                        className="flex-1 bg-stone-100 border-none rounded-2xl px-5 py-3 text-xs outline-none focus:bg-stone-200 transition-all"
-                        value={newComment}
-                        onChange={e => setNewComment(e.target.value)}
-                        onKeyPress={e => e.key === 'Enter' && handleAddComment(req.id)}
-                      />
-                      <button onClick={() => handleAddComment(req.id)} className="bg-stone-900 text-white w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg active:scale-90 transition-all">➜</button>
+                      <input placeholder="Sua palavra..." className="flex-1 bg-stone-100 rounded-2xl px-5 py-3 text-xs outline-none" value={newComment} onChange={e => setNewComment(e.target.value)} onKeyPress={e => e.key === 'Enter' && (DB.addComment(req.id, { id: Date.now().toString(), userName: 'Intercessor', content: newComment, timestamp: Date.now() }), setCommunityRequests(DB.getCommunityPrayers()), setNewComment(''))} />
                     </div>
                   </div>
                 )}
               </div>
             ))}
-            {communityRequests.length === 0 && <div className="py-20 text-center text-stone-300 italic">Mural vazio. Seja o primeiro a pedir oração.</div>}
           </div>
         </div>
       )}
     </div>
   );
 };
-
-const VoiceBtn = ({ label, loading, active, onClick }: any) => (
-  <button onClick={onClick} disabled={loading} className={`w-full py-5 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] flex items-center justify-center gap-3 transition-all ${active ? 'bg-amber-600 text-white shadow-lg' : 'bg-stone-100 text-stone-400 active:bg-stone-200'}`}>
-    {loading ? <div className="w-3 h-3 border-2 border-stone-300 border-t-amber-500 rounded-full animate-spin"></div> : <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4"><path d="M8 5v14l11-7z"/></svg>}
-    {label}
-  </button>
-);
 
 export default PrayerPage;
